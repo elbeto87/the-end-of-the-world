@@ -5,6 +5,7 @@ description = "FastAPI application to demonstrate the end of the world."
 authors = ["elbeto87"]
 readme = "[README.md](http://readme.md/)"
 packages = [{include = "app"}]
+package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
