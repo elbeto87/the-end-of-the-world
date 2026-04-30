@@ -1,5 +1,4 @@
 from fastapi import FastAPI
-
 from app.api.routes import asteroid
 
 app = FastAPI(
@@ -14,4 +13,4 @@ app = FastAPI(
     openapi_path="/openapi.json"
 )
 
-app.include_router(asteroid, prefix="/asteroid")
+app.include_router(asteroid.router, prefix="/asteroid")
