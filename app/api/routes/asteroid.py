@@ -5,5 +5,5 @@ router = APIRouter(
 )
 
 @router.get("")
-def read_root():
+def get_all_asteroids() -> dict:
     return {"Hello": "World"}
