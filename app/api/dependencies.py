@@ -3,13 +3,24 @@ from typing import Generator
 import httpx
 from fastapi import Depends
 
-from app.clients.nasa_client import NASAClient
+from app.clients.nasa_neows_client import NASANeoWSClient
+from app.clients.nasa_sentry_client import NASASentryClient
 from app.services import AsteroidService
 
 
-def get_nasa_client() -> Generator[NASAClient, None, None]:
+def get_nasa_neows_client() -> Generator[NASANeoWSClient, None, None]:
     with httpx.Client() as client:
-        yield NASAClient(client)
+        yield NASANeoWSClient(client)
 
-def get_asteroid_service(nasa_client: NASAClient = Depends(get_nasa_client)) -> AsteroidService:
-    return AsteroidService(nasa_client=nasa_client)
+def get_nasa_sentry_client() -> Generator[NASASentryClient, None, None]:
+    with httpx.Client() as client:
+        yield NASASentryClient(client)
+
+def get_asteroid_service(
+    nasa_neows_client: NASANeoWSClient = Depends(get_nasa_neows_client),
+    nasa_sentry_client: NASASentryClient = Depends(get_nasa_sentry_client),
+) -> AsteroidService:
+    return AsteroidService(
+        nasa_neows_client=nasa_neows_client,
+        nasa_sentry_client=nasa_sentry_client,
+    )
