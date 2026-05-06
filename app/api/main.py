@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from app.api.routes import asteroid
+from app.api.routes import asteroid, impact_event
 
 app = FastAPI(
     title="The end of the world",
@@ -14,4 +14,4 @@ app = FastAPI(
 )
 
 app.include_router(asteroid.router, prefix="/asteroid")
-app.include_router(asteroid.router, prefix="/impact_event")
+app.include_router(impact_event.router, prefix="/impact_event")

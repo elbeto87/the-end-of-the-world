@@ -22,9 +22,9 @@ class AsteroidService:
             impact_event_id=impact_event["id"],
             asteroid_name=impact_event["des"],
             date=impact_event["date"],
-            impact_probability=impact_event["impact_probability"],
+            impact_probability=impact_event["ip"],
             energy=impact_event["energy"],
-            dangerous_score=impact_event["impact_probability"]*impact_event["energy"]*SCALE_FACTOR,
+            dangerous_score=float(impact_event["ip"])*float(impact_event["energy"])*SCALE_FACTOR,
         ) for impact_event in impact_events]
 
 
