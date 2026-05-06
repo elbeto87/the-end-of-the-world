@@ -10,3 +10,7 @@ router = APIRouter(
 @router.get("")
 def get_all_asteroids(asteroid_service: AsteroidService = Depends(get_asteroid_service)) -> dict:
     return asteroid_service.get_all_asteroids()
+
+@router.get("/impact_data")
+def get_all_impact_data(asteroid_service: AsteroidService = Depends(get_asteroid_service)) -> dict:
+    return asteroid_service.get_impact_data()

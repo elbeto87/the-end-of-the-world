@@ -11,3 +11,7 @@ class AsteroidService:
     def get_all_asteroids(self) -> dict:
         response = self.nasa_neows_client.get_all_asteroids()
         return response
+
+    def get_impact_data(self, impact_probability: str = "1e-3") -> dict:
+        response = self.nasa_sentry_client.get_impact_data(impact_probability)
+        return response.json()
