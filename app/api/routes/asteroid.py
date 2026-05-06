@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 
 from app.api.dependencies import get_asteroid_service
-from app.services import AsteroidService
+from app.services.asteroid_service import AsteroidService
+
 
 router = APIRouter(
     tags=["asteroid"],
@@ -10,7 +11,3 @@ router = APIRouter(
 @router.get("")
 def get_all_asteroids(asteroid_service: AsteroidService = Depends(get_asteroid_service)) -> dict:
     return asteroid_service.get_all_asteroids()
-
-@router.get("/impact_data")
-def get_all_impact_data(asteroid_service: AsteroidService = Depends(get_asteroid_service)) -> dict:
-    return asteroid_service.get_impact_data()

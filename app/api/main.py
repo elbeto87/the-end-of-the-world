@@ -14,3 +14,4 @@ app = FastAPI(
 )
 
 app.include_router(asteroid.router, prefix="/asteroid")
+app.include_router(asteroid.router, prefix="/impact_event")
