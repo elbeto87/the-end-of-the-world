@@ -18,14 +18,17 @@ class AsteroidService:
 
     def get_impact_data(self, impact_probability: str = "1e-3") -> list[ImpactEvent]:
         impact_events = self.nasa_sentry_client.get_impact_data(impact_probability)
-        return [ImpactEvent(
-            impact_event_id=impact_event["id"],
-            asteroid_name=impact_event["des"],
-            date=impact_event["date"],
-            impact_probability=round(float(impact_event["ip"]), 4),
-            energy=round(float(impact_event["energy"]), 4)*1000,
-            dangerous_score=round(float(impact_event["ip"])*float(impact_event["energy"])*SCALE_FACTOR, 2),
-        ) for impact_event in impact_events]
+        impact_events_list = [
+            ImpactEvent(
+                impact_event_id=impact_event["id"],
+                asteroid_name=impact_event["des"],
+                date=impact_event["date"],
+                impact_probability=round(float(impact_event["ip"]), 4),
+                energy=round(float(impact_event["energy"]), 4)*1000, # Expressed in kt
+                dangerous_score=round(float(impact_event["ip"])*float(impact_event["energy"])*SCALE_FACTOR, 2),
+            ) for impact_event in impact_events
+        ]
+        return sorted(impact_events_list, key=lambda x: x.dangerous_score, reverse=True)
 
 
     def get_top_risk_impact_data(self, count: int = 1) -> list[ImpactEvent]:

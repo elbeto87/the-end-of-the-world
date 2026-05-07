@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter
+from fastapi import Depends, APIRouter, Query
 
 from app.api.dependencies import get_asteroid_service
 from app.schemas.impact_event import ImpactEvent
@@ -16,6 +16,9 @@ def get_all_impact_data(asteroid_service: AsteroidService = Depends(get_asteroid
 
 
 @router.get("/top_risk")
-def get_top_risk_impact_data(asteroid_service: AsteroidService = Depends(get_asteroid_service)) -> list[ImpactEvent]:
-    impact_data = asteroid_service.get_top_risk_impact_data(count=1)
+def get_top_risk_impact_data(
+        count: int = Query(1, ge=1, description="Number of top risk impact events to retrieve"),
+        asteroid_service: AsteroidService = Depends(get_asteroid_service),
+) -> list[ImpactEvent]:
+    impact_data = asteroid_service.get_top_risk_impact_data(count=count)
     return impact_data
