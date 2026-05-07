@@ -13,8 +13,10 @@ class AsteroidService:
         self.nasa_sentry_client = nasa_sentry_client
 
     def get_all_asteroids(self) -> dict:
-        response = self.nasa_neows_client.get_all_asteroids()
-        return response
+        return self.nasa_neows_client.get_all_asteroids()
+
+    def get_asteroid(self, asteroid_name: str):
+        return self.nasa_neows_client.get_asteroid(asteroid_name)
 
     def get_impact_data(self, impact_probability: str = "1e-3") -> list[ImpactEvent]:
         impact_events = self.nasa_sentry_client.get_impact_data(impact_probability)
