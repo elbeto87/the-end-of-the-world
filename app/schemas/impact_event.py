@@ -1,9 +1,11 @@
 from pydantic import BaseModel
 
+from app.schemas.asteroid import AsteroidSchema
 
-class ImpactEvent(BaseModel):
+
+class ImpactEventSchema(BaseModel):
     impact_event_id: str
-    asteroid_name: str
+    asteroid: AsteroidSchema
     date: str
     impact_probability: float
     energy: float

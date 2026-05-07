@@ -1,6 +1,6 @@
 from app.clients.nasa_neows_client import NASANeoWSClient
 from app.clients.nasa_sentry_client import NASASentryClient
-from app.schemas.impact_event import ImpactEvent
+from app.schemas.impact_event import ImpactEventSchema
 
 
 SCALE_FACTOR = 1_000_000
@@ -15,15 +15,15 @@ class AsteroidService:
     def get_all_asteroids(self) -> dict:
         return self.nasa_neows_client.get_all_asteroids()
 
-    def get_asteroid(self, asteroid_name: str):
-        return self.nasa_neows_client.get_asteroid(asteroid_name)
+    def get_asteroid_by_name(self, asteroid_name: str):
+        return self.nasa_neows_client.get_asteroid_by_name(asteroid_name)
 
-    def get_impact_data(self, impact_probability: str = "1e-3") -> list[ImpactEvent]:
+    def get_impact_data(self, impact_probability: str = "1e-3") -> list[ImpactEventSchema]:
         impact_events = self.nasa_sentry_client.get_impact_data(impact_probability)
         impact_events_list = [
-            ImpactEvent(
+            ImpactEventSchema(
                 impact_event_id=impact_event["id"],
-                asteroid_name=impact_event["des"],
+                asteroid=impact_event["des"],
                 date=impact_event["date"],
                 impact_probability=round(float(impact_event["ip"]), 4),
                 energy=round(float(impact_event["energy"]), 4)*1000, # Expressed in kt
@@ -33,5 +33,5 @@ class AsteroidService:
         return sorted(impact_events_list, key=lambda x: x.dangerous_score, reverse=True)
 
 
-    def get_top_risk_impact_data(self, count: int = 1) -> list[ImpactEvent]:
+    def get_top_risk_impact_data(self, count: int = 1) -> list[ImpactEventSchema]:
         return self.get_impact_data()[:count]
