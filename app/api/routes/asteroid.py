@@ -9,9 +9,6 @@ router = APIRouter(
     tags=["asteroid"],
 )
 
-@router.get("")
-def get_all_asteroids(asteroid_service: AsteroidService = Depends(get_asteroid_service)) -> dict:
-    return asteroid_service.get_all_asteroids()
 
 @router.get("/{asteroid_name}")
 def get_asteroid_by_name(

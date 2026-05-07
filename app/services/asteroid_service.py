@@ -12,9 +12,6 @@ class AsteroidService:
         self.nasa_neows_client = nasa_neows_client
         self.nasa_sentry_client = nasa_sentry_client
 
-    def get_all_asteroids(self) -> dict:
-        return self.nasa_neows_client.get_all_asteroids()
-
     def get_asteroid_by_name(self, asteroid_name: str):
         return self.nasa_neows_client.get_asteroid_by_name(asteroid_name)
 
