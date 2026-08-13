@@ -1,8 +1,15 @@
 name: Keep backend alive
 
 # Render's free tier spins the service down after ~15 minutes without
-# traffic. This workflow pings the backend health endpoint every 10 minutes
-# so the instance never goes idle during the day.
+# traffic. This workflow keeps the backend awake by pinging its /health
+# endpoint frequently.
+#
+# Why a loop instead of just a shorter cron?
+# GitHub's scheduled workflows have a 5-minute minimum AND are frequently
+# delayed (or even skipped) by several minutes during peak load. Relying on
+# the cron alone is unreliable, so each run also loops internally, pinging
+# every couple of minutes for ~14 minutes. That way a single run bridges the
+# gap even if the next scheduled run is late or dropped.
 #
 # Setup: add a repository variable named BACKEND_URL with the public base
 # URL of the Render service (e.g. https://my-backend.onrender.com).
@@ -10,31 +17,55 @@ name: Keep backend alive
 
 on:
   schedule:
-    # Every 10 minutes. GitHub may delay scheduled runs by a few minutes,
-    # which is still well within Render's ~15 minute idle window.
-    - cron: '*/10 * * * *'
+    # Every 5 minutes (GitHub's minimum). Combined with the in-job loop below,
+    # this gives frequent, redundant pings.
+    - cron: '*/5 * * * *'
   workflow_dispatch: {}
+
+# Only one keep-alive run at a time: a fresh run cancels the previous one so
+# jobs never pile up while still guaranteeing continuous coverage.
+concurrency:
+  group: keep-alive
+  cancel-in-progress: true
 
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 16
     steps:
-      - name: Ping health endpoint
+      - name: Ping health endpoint repeatedly
         env:
           # Works whether BACKEND_URL was created as a repository variable
           # (Settings -> Secrets and variables -> Actions -> Variables tab)
           # or as a repository secret (Secrets tab).
           BACKEND_URL: ${{ vars.BACKEND_URL || secrets.BACKEND_URL }}
+          # How long this run keeps pinging (seconds) and how often (seconds).
+          DURATION_SECONDS: '840'   # ~14 min, bridges GitHub scheduler delays
+          INTERVAL_SECONDS: '120'   # ping every 2 minutes
         run: |
           if [ -z "$BACKEND_URL" ]; then
             echo "::error::BACKEND_URL is not set. Create it in Settings -> Secrets and variables -> Actions, either in the 'Variables' tab or the 'Secrets' tab, with the public URL of the Render service (e.g. https://my-backend.onrender.com)."
             exit 1
           fi
-          # Retry a few times: the first hit may be a cold start (~1 min on Render)
-          curl --fail --silent --show-error \
-            --retry 5 --retry-delay 15 --retry-all-errors \
-            --max-time 120 \
-            "${BACKEND_URL%/}/health"
-          echo "Backend is awake."
+
+          url="${BACKEND_URL%/}/health"
+          deadline=$(( $(date +%s) + DURATION_SECONDS ))
+
+          while :; do
+            # Retry a few times: the first hit may be a cold start (~1 min on Render)
+            if curl --fail --silent --show-error \
+                 --retry 5 --retry-delay 15 --retry-all-errors \
+                 --max-time 120 \
+                 "$url"; then
+              echo " -> $(date -u '+%H:%M:%SZ') backend is awake."
+            else
+              echo "::warning::Ping failed at $(date -u '+%H:%M:%SZ'); will retry on next loop."
+            fi
+
+            # Stop if the next sleep would run past our deadline.
+            [ "$(( $(date +%s) + INTERVAL_SECONDS ))" -ge "$deadline" ] && break
+            sleep "$INTERVAL_SECONDS"
+          done
+
+          echo "Keep-alive run finished."
 
